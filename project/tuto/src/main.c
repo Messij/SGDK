@@ -1,23 +1,71 @@
 #include <genesis.h>
 #include "resources.h"
 
+// scrolling
 int hScrollOffset_Background = 0;
 int hScrollOffset_Foreground = 0;
 int hScrollOffsetSpeed = -1;
 
+// Options
+bool runGame = 1;
 bool drawText = 0;
 bool drawImage = 0;
 bool drawBackgroundAndForground = 0;
 bool drawSprite = 1;
-bool runGame = 1;
+bool controlPlayer = 1;
 
-enum SpriteAnimation
+// Animations
+#define STATIC 0
+#define IDLE 1
+#define WALK 2
+#define COMBO 3
+
+// Control
+Sprite *playerSprite;
+int player_x = 100;
+int player_y = 50;
+int player_speed = 2;
+
+#define RIGHT JOY_readJoypad(JOY_1) & BUTTON_RIGHT
+#define LEFT JOY_readJoypad(JOY_1) & BUTTON_LEFT
+#define DOWN JOY_readJoypad(JOY_1) & BUTTON_DOWN
+#define UP JOY_readJoypad(JOY_1) & BUTTON_UP
+#define A JOY_readJoypad(JOY_1) & BUTTON_A
+#define B JOY_readJoypad(JOY_1) & BUTTON_B
+#define C JOY_readJoypad(JOY_1) & BUTTON_C
+#define START JOY_readJoypad(JOY_1) & BUTTON_START
+
+static void HandleInput()
 {
-    Static,
-    Idle,
-    Walk,
-    Combo
-};
+    // Directions
+    player_x += (RIGHT) ? player_speed : 0;
+    player_x -= (LEFT) ? player_speed : 0;
+    player_y += (DOWN) ? player_speed : 0;
+    player_y -= (UP) ? player_speed : 0;
+}
+
+static void UpdatePlayerSpritePosition()
+{
+    SPR_setPosition(playerSprite, player_x, player_y);
+}
+
+static void UpdatePlayerAnimation()
+{
+    if (A)
+        SPR_setAnim(playerSprite, COMBO);
+    else if (RIGHT || LEFT || DOWN || UP)
+        SPR_setAnim(playerSprite, WALK);
+    else
+        SPR_setAnim(playerSprite, IDLE);
+}
+
+static void UpdatePlayerSpriteFlip()
+{
+    if (RIGHT)
+        SPR_setHFlip(playerSprite, TRUE);
+    else if (LEFT)
+        SPR_setHFlip(playerSprite, FALSE);
+}
 
 int main()
 {
@@ -62,8 +110,8 @@ int main()
     {
         SPR_init();
         PAL_setPalette(PAL2, axelSprite.palette->data, DMA);
-        Sprite *axel = SPR_addSprite(&axelSprite, 100, 50, TILE_ATTR(PAL2, FALSE, FALSE, FALSE));
-        SPR_setAnim(axel, Walk);
+        playerSprite = SPR_addSprite(&axelSprite, player_x, player_y, TILE_ATTR(PAL2, FALSE, FALSE, FALSE));
+        SPR_setAnim(playerSprite, IDLE);
     }
 
     while (runGame)
@@ -73,7 +121,14 @@ int main()
             VDP_setHorizontalScroll(BG_B, hScrollOffset_Background += hScrollOffsetSpeed);
             VDP_setHorizontalScroll(BG_A, hScrollOffset_Foreground += hScrollOffsetSpeed * 2);
         }
+        if (controlPlayer)
+        {
+            HandleInput();
 
+            UpdatePlayerSpritePosition();
+            UpdatePlayerAnimation();
+            UpdatePlayerSpriteFlip();
+        }
         if (drawSprite)
         {
             SPR_update();
