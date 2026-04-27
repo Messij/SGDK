@@ -8,9 +8,9 @@ int hScrollOffsetSpeed = -1;
 
 // Options
 bool runGame = 1;
-bool drawText = 0;
+bool drawText = 1;
 bool drawImage = 0;
-bool drawBackgroundAndForground = 0;
+bool drawBackgroundAndForground = 1;
 bool drawSprite = 1;
 bool controlPlayer = 1;
 
@@ -26,14 +26,20 @@ int player_x = 100;
 int player_y = 50;
 int player_speed = 2;
 
-#define RIGHT JOY_readJoypad(JOY_1) & BUTTON_RIGHT
-#define LEFT JOY_readJoypad(JOY_1) & BUTTON_LEFT
-#define DOWN JOY_readJoypad(JOY_1) & BUTTON_DOWN
-#define UP JOY_readJoypad(JOY_1) & BUTTON_UP
-#define A (JOY_readJoypad(JOY_1) & BUTTON_A)
-#define B JOY_readJoypad(JOY_1) & BUTTON_B
-#define C JOY_readJoypad(JOY_1) & BUTTON_C
-#define START JOY_readJoypad(JOY_1) & BUTTON_START
+// Attack
+int attackTimer = 0;
+int attackDuration = 56; // Duration of the attack animation in frames
+bool isAttacking = FALSE;
+
+u16 joypad1State = 0;
+#define RIGHT (joypad1State & BUTTON_RIGHT)
+#define LEFT (joypad1State & BUTTON_LEFT)
+#define DOWN (joypad1State & BUTTON_DOWN)
+#define UP (joypad1State & BUTTON_UP)
+#define A (joypad1State & BUTTON_A)
+#define B (joypad1State & BUTTON_B)
+#define C (joypad1State & BUTTON_C)
+#define START (joypad1State & BUTTON_START)
 
 static void HandleInput()
 {
@@ -53,7 +59,7 @@ static void UpdatePlayerSpriteAnimation()
 {
     if (RIGHT || LEFT || DOWN || UP)
         SPR_setAnim(playerSprite, WALK);
-    else if (!A)
+    else
         SPR_setAnim(playerSprite, IDLE);
 }
 
@@ -65,11 +71,13 @@ static void UpdatePlayerSpriteFlip()
         SPR_setHFlip(playerSprite, FALSE);
 }
 
-static void JoyEvents(u16 joy, u16 changed, u16 state)
+static void JoypadEvents(u16 joy, u16 changed, u16 state)
 {
-    if (changed & state & BUTTON_A)
+    if (changed & state & BUTTON_A && isAttacking == FALSE)
     {
         SPR_setAnim(playerSprite, COMBO);
+        isAttacking = TRUE;
+        attackTimer = 0; // Reset the attack timer when the attack starts
     }
 }
 
@@ -78,6 +86,7 @@ int main()
     if (drawText)
     {
         VDP_drawText("Hello Sega !!", 0, 0);
+        VDP_drawText(isAttacking ? "Attacking!" : "Not Attacking", 0, 1);
     }
     if (drawImage)
     {
@@ -86,8 +95,8 @@ int main()
     }
     if (drawBackgroundAndForground)
     {
-        const Image *bg = &bgSonic1;
-        const Image *fg = &fgSonic1;
+        const Image *bg = &bgStreet1;
+        const Image *fg = &fgStreet1;
         u16 ind = TILE_USER_INDEX;
 
         // Background
@@ -99,7 +108,7 @@ int main()
         }
 
         // Foreground
-        if (fg)
+        if (fg && 0)
         {
             PAL_setPalette(PAL1, fg->palette->data, DMA);
             VDP_drawImageEx(BG_A, fg, TILE_ATTR_FULL(PAL1, FALSE, FALSE, FALSE, ind), 0, 0, FALSE, TRUE);
@@ -118,29 +127,48 @@ int main()
     }
     if (controlPlayer)
     {
-        JOY_setEventHandler(JoyEvents);
+        JOY_init();
+        JOY_setEventHandler(JoypadEvents);
     }
 
     while (runGame)
     {
+        JOY_update();
+        joypad1State = JOY_readJoypad(JOY_1);
+
+        if (drawText)
+        {
+            // Ajouter l'affichage de la valeur d'attackTimer
+            char buffer[16]; // Buffer pour stocker la chaîne formatée
+            sprintf(buffer, "Timer: %d", attackTimer);
+            VDP_drawText(buffer, 0, 2); // Afficher à la ligne 2
+
+            sprintf(buffer, "JOY:%04X", joypad1State);
+            VDP_drawText(buffer, 0, 3); // Afficher la valeur brute du pad
+        }
         if (drawBackgroundAndForground)
         {
-            VDP_setHorizontalScroll(BG_B, hScrollOffset_Background += hScrollOffsetSpeed);
-            VDP_setHorizontalScroll(BG_A, hScrollOffset_Foreground += hScrollOffsetSpeed * 2);
+            // VDP_setHorizontalScroll(BG_B, hScrollOffset_Background += hScrollOffsetSpeed);
+            // VDP_setHorizontalScroll(BG_A, hScrollOffset_Foreground += hScrollOffsetSpeed * 2);
         }
         if (controlPlayer)
         {
-            HandleInput();
-            JOY_update();
-            UpdatePlayerSpriteAnimation();
-            UpdatePlayerSpritePosition();
-            UpdatePlayerSpriteFlip();
+            if (!isAttacking)
+            {
+                HandleInput();
+                UpdatePlayerSpriteAnimation();
+                UpdatePlayerSpritePosition();
+                UpdatePlayerSpriteFlip();
+            }
+            else if (attackTimer < attackDuration)
+                attackTimer++;
+            else
+                isAttacking = FALSE;
         }
         if (drawSprite)
         {
             SPR_update();
         }
-
         SYS_doVBlankProcess();
     }
     return (0);
