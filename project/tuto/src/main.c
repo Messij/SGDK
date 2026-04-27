@@ -1,16 +1,17 @@
-/**
- * Hello World Example
- * Created With Genesis-Code extension for Visual Studio Code
- * Use "Genesis Code: Compile" command to compile this program.
- **/
 #include <genesis.h>
+#include "resources.h"
 
 int main()
 {
-    VDP_drawText("Hello Sega gaga !!", 10, 13);
+    // Draw text
+    VDP_drawText("Hello Sega!!", 0, 0);
+
+    // Draw image
+    PAL_setPalette(PAL1, moon.palette->data, CPU);
+    VDP_drawImageEx(BG_A, &moon, TILE_ATTR_FULL(PAL1, 0, 0, 0, 1), 12, 12, 0, CPU);
+
     while (1)
     {
-        // For versions prior to SGDK 1.60 use VDP_waitVSync instead.
         SYS_doVBlankProcess();
     }
     return (0);
