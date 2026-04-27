@@ -9,8 +9,15 @@ bool drawText = 0;
 bool drawImage = 0;
 bool drawBackgroundAndForground = 0;
 bool drawSprite = 1;
-
 bool runGame = 1;
+
+enum SpriteAnimation
+{
+    Static,
+    Idle,
+    Walk,
+    Combo
+};
 
 int main()
 {
@@ -56,6 +63,7 @@ int main()
         SPR_init();
         PAL_setPalette(PAL2, axelSprite.palette->data, DMA);
         Sprite *axel = SPR_addSprite(&axelSprite, 100, 50, TILE_ATTR(PAL2, FALSE, FALSE, FALSE));
+        SPR_setAnim(axel, Walk);
     }
 
     while (runGame)
