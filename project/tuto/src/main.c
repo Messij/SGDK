@@ -30,7 +30,7 @@ int player_speed = 2;
 #define LEFT JOY_readJoypad(JOY_1) & BUTTON_LEFT
 #define DOWN JOY_readJoypad(JOY_1) & BUTTON_DOWN
 #define UP JOY_readJoypad(JOY_1) & BUTTON_UP
-#define A JOY_readJoypad(JOY_1) & BUTTON_A
+#define A (JOY_readJoypad(JOY_1) & BUTTON_A)
 #define B JOY_readJoypad(JOY_1) & BUTTON_B
 #define C JOY_readJoypad(JOY_1) & BUTTON_C
 #define START JOY_readJoypad(JOY_1) & BUTTON_START
@@ -49,13 +49,11 @@ static void UpdatePlayerSpritePosition()
     SPR_setPosition(playerSprite, player_x, player_y);
 }
 
-static void UpdatePlayerAnimation()
+static void UpdatePlayerSpriteAnimation()
 {
-    if (A)
-        SPR_setAnim(playerSprite, COMBO);
-    else if (RIGHT || LEFT || DOWN || UP)
+    if (RIGHT || LEFT || DOWN || UP)
         SPR_setAnim(playerSprite, WALK);
-    else
+    else if (!A)
         SPR_setAnim(playerSprite, IDLE);
 }
 
@@ -67,19 +65,25 @@ static void UpdatePlayerSpriteFlip()
         SPR_setHFlip(playerSprite, FALSE);
 }
 
+static void JoyEvents(u16 joy, u16 changed, u16 state)
+{
+    if (changed & state & BUTTON_A)
+    {
+        SPR_setAnim(playerSprite, COMBO);
+    }
+}
+
 int main()
 {
     if (drawText)
     {
         VDP_drawText("Hello Sega !!", 0, 0);
     }
-
     if (drawImage)
     {
         PAL_setPalette(PAL1, moon.palette->data, CPU);
         VDP_drawImageEx(BG_A, &moon, TILE_ATTR_FULL(PAL1, 0, 0, 0, 1), 12, 12, 0, CPU);
     }
-
     if (drawBackgroundAndForground)
     {
         const Image *bg = &bgSonic1;
@@ -105,13 +109,16 @@ int main()
         // Scroll background
         VDP_setScrollingMode(HSCROLL_PLANE, VSCROLL_PLANE);
     }
-
     if (drawSprite)
     {
         SPR_init();
         PAL_setPalette(PAL2, axelSprite.palette->data, DMA);
         playerSprite = SPR_addSprite(&axelSprite, player_x, player_y, TILE_ATTR(PAL2, FALSE, FALSE, FALSE));
         SPR_setAnim(playerSprite, IDLE);
+    }
+    if (controlPlayer)
+    {
+        JOY_setEventHandler(JoyEvents);
     }
 
     while (runGame)
@@ -124,9 +131,9 @@ int main()
         if (controlPlayer)
         {
             HandleInput();
-
+            JOY_update();
+            UpdatePlayerSpriteAnimation();
             UpdatePlayerSpritePosition();
-            UpdatePlayerAnimation();
             UpdatePlayerSpriteFlip();
         }
         if (drawSprite)
