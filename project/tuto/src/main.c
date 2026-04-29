@@ -14,17 +14,29 @@ bool drawBackgroundAndForground = 1;
 bool drawSprite = 1;
 bool controlPlayer = 1;
 
-// Animations
+// Animations player 1
 #define STATIC 0
 #define IDLE 1
 #define WALK 2
 #define COMBO 3
 
+// Animations player 2
+#define STATIC2 0
+#define IDLE2 1
+#define WALK2 2
+#define COMBO2 3
+
 // Control
 Sprite *playerSprite;
-int player_x = 100;
-int player_y = 50;
+int player_x = 0;
+int player_y = 0;
 int player_speed = 2;
+
+// Control
+Sprite *player2Sprite;
+int player2_x = 0;
+int player2_y = 0;
+int player2_speed = 4;
 
 // Attack
 int attackTimer = 0;
@@ -41,6 +53,16 @@ u16 joypad1State = 0;
 #define C (joypad1State & BUTTON_C)
 #define START (joypad1State & BUTTON_START)
 
+u16 joypad2State = 0;
+#define RIGHT2 (joypad2State & BUTTON_RIGHT)
+#define LEFT2 (joypad2State & BUTTON_LEFT)
+#define DOWN2 (joypad2State & BUTTON_DOWN)
+#define UP2 (joypad2State & BUTTON_UP)
+#define A2 (joypad2State & BUTTON_A)
+#define B2 (joypad2State & BUTTON_B)
+#define C2 (joypad2State & BUTTON_C)
+#define START2 (joypad2State & BUTTON_START)
+
 static void HandleInput()
 {
     // Directions
@@ -48,11 +70,18 @@ static void HandleInput()
     player_x -= (LEFT) ? player_speed : 0;
     player_y += (DOWN) ? player_speed : 0;
     player_y -= (UP) ? player_speed : 0;
+
+    // Directions
+    player2_x += (RIGHT2) ? player2_speed : 0;
+    player2_x -= (LEFT2) ? player2_speed : 0;
+    player2_y += (DOWN2) ? player2_speed : 0;
+    player2_y -= (UP2) ? player2_speed : 0;
 }
 
 static void UpdatePlayerSpritePosition()
 {
     SPR_setPosition(playerSprite, player_x, player_y);
+    SPR_setPosition(player2Sprite, player2_x, player2_y);
 }
 
 static void UpdatePlayerSpriteAnimation()
@@ -61,6 +90,11 @@ static void UpdatePlayerSpriteAnimation()
         SPR_setAnim(playerSprite, WALK);
     else
         SPR_setAnim(playerSprite, IDLE);
+
+    if (RIGHT2 || LEFT2 || DOWN2 || UP2)
+        SPR_setAnim(player2Sprite, WALK2);
+    else
+        SPR_setAnim(player2Sprite, IDLE2);
 }
 
 static void UpdatePlayerSpriteFlip()
@@ -69,6 +103,11 @@ static void UpdatePlayerSpriteFlip()
         SPR_setHFlip(playerSprite, TRUE);
     else if (LEFT)
         SPR_setHFlip(playerSprite, FALSE);
+
+    if (RIGHT2)
+        SPR_setHFlip(player2Sprite, FALSE);
+    else if (LEFT2)
+        SPR_setHFlip(player2Sprite, TRUE);
 }
 
 static void JoypadEvents(u16 joy, u16 changed, u16 state)
@@ -122,8 +161,13 @@ int main()
     {
         SPR_init();
         PAL_setPalette(PAL2, axelSprite.palette->data, DMA);
+        PAL_setPalette(PAL3, sonicSprite.palette->data, DMA);
+
         playerSprite = SPR_addSprite(&axelSprite, player_x, player_y, TILE_ATTR(PAL2, FALSE, FALSE, FALSE));
+        player2Sprite = SPR_addSprite(&sonicSprite, player2_x, player2_y, TILE_ATTR(PAL3, FALSE, FALSE, FALSE));
+
         SPR_setAnim(playerSprite, IDLE);
+        SPR_setAnim(player2Sprite, IDLE);
     }
     if (controlPlayer)
     {
@@ -133,8 +177,9 @@ int main()
 
     while (runGame)
     {
-        JOY_update();
+        // JOY_update();
         joypad1State = JOY_readJoypad(JOY_1);
+        joypad2State = JOY_readJoypad(JOY_2);
 
         if (drawText)
         {
