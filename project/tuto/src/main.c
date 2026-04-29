@@ -160,10 +160,10 @@ int main()
     if (drawSprite)
     {
         SPR_init();
-        PAL_setPalette(PAL2, axelSprite.palette->data, DMA);
+        PAL_setPalette(PAL2, axel2Sprite.palette->data, DMA);
         PAL_setPalette(PAL3, sonicSprite.palette->data, DMA);
 
-        playerSprite = SPR_addSprite(&axelSprite, player_x, player_y, TILE_ATTR(PAL2, FALSE, FALSE, FALSE));
+        playerSprite = SPR_addSprite(&axel2Sprite, player_x, player_y, TILE_ATTR(PAL2, FALSE, FALSE, FALSE));
         player2Sprite = SPR_addSprite(&sonicSprite, player2_x, player2_y, TILE_ATTR(PAL3, FALSE, FALSE, FALSE));
 
         SPR_setAnim(playerSprite, IDLE);
