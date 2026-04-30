@@ -1,0 +1,1 @@
+SPRITE friskSprite "frisk.png" 3 4 FAST 10
