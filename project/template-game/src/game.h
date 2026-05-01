@@ -32,7 +32,7 @@ void InitGame(struct Game *game)
     if (game == NULL)
         return;
 
-    game->state = MENU;
+    game->state = GAME;
     game->isRunning = true;
     game->score = 0;
     game->level = 1;
@@ -72,17 +72,6 @@ void EndGame(struct Game *game)
 
     game->state = MENU;
 }
-void UpdateGame(struct Game *game)
-{
-    if (game->state == GAME)
-    {
-        // Update Characters
-        for (int i = 0; i < game->characterCount; i++)
-        {
-            UpdateCharacter(&game->characters[i]);
-        }
-    }
-}
 void GameInputs(struct Game *game)
 {
     if (JOY_readJoypad(JOY_1) & BUTTON_START)
@@ -96,6 +85,18 @@ void GameInputs(struct Game *game)
         else if (game->state == GAME_OVER)
             EndGame(game);
     }
+}
+void UpdateGame(struct Game *game)
+{
+    if (game->state == GAME)
+    {
+        // Update Characters
+        for (int i = 0; i < game->characterCount; i++)
+        {
+            UpdateCharacter(&game->characters[i]);
+        }
+    }
+    GameInputs(game);
 }
 void DrawGame(struct Game *game)
 {
@@ -127,7 +128,7 @@ void DrawGame(struct Game *game)
     SYS_doVBlankProcess();
 }
 
-void AddCharacter(struct Game *game, struct Character *character)
+void AddCharacterToGame(struct Game *game, struct Character *character)
 {
     if (game == NULL || character == NULL || game->characterCount >= MAX_CHARACTERS)
         return;

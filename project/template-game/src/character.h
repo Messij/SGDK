@@ -31,14 +31,22 @@ struct Character
     int control;
 };
 
-struct Character *CreateCharacter(struct Game *game, int startX, int startY, int speed, const SpriteDefinition *spriteDefinition, int control)
-{
-    struct Character *character = malloc(sizeof(struct Character));
-    InitCharacter(character, startX, startY, speed, spriteDefinition, control);
-    AddCharacter(&game, character);
-    return character;
-}
+// struct Character *CreateCharacter(struct Game *game, int startX, int startY, int speed, const SpriteDefinition *spriteDefinition, int control)
+// {
+//     struct Character *character = malloc(sizeof(struct Character));
+//     InitCharacter(character, startX, startY, speed, spriteDefinition, control);
+//     AddCharacterToGame(&game, character);
+//     return character;
+// }
 
+// void InitCharacterToGame(struct Game *game, struct Character *character, int startX, int startY, int speed, const SpriteDefinition *spriteDefinition, int control)
+// {
+//     if (character == NULL || game == NULL)
+//         return;
+
+//     InitCharacter(character, startX, startY, speed, spriteDefinition, control);
+//     AddCharacterToGame(game, character);
+// }
 void InitCharacter(struct Character *character, int startX, int startY, int speed, const SpriteDefinition *spriteDefinition, int control)
 {
     if (character == NULL)
@@ -54,47 +62,31 @@ void InitCharacter(struct Character *character, int startX, int startY, int spee
     SPR_setAutoAnimation(character->sprite, FALSE);
     SPR_setFrame(character->sprite, 0);
 }
-void UpdateCharacter(struct Character *character)
-{
-    // Control
-    if (character->control >= JOY_1)
-        HandlePlayerInput(character);
-    else
-        HandleAIInput(character);
-
-    // Move
-    MoveCharacter(character);
-
-    // Animation
-    AnimateCharacter(character);
-}
 void AnimateCharacter(struct Character *character)
-{ // Sprite Animation
+{
+    if (character->orientation == RIGHT)
     {
-        if (character->orientation == RIGHT)
-        {
-            SPR_setAutoAnimation(character->sprite, TRUE);
-            SPR_setAnim(character->sprite, SIDE);
-            SPR_setHFlip(character->sprite, TRUE);
-        }
-        else if (character->orientation == LEFT)
-        {
-            SPR_setAutoAnimation(character->sprite, TRUE);
-            SPR_setAnim(character->sprite, SIDE);
-            SPR_setHFlip(character->sprite, FALSE);
-        }
-        else if (character->orientation == DOWN)
-        {
-            SPR_setAutoAnimation(character->sprite, TRUE);
-            SPR_setAnim(character->sprite, FACE);
-            SPR_setHFlip(character->sprite, FALSE);
-        }
-        else if (character->orientation == UP)
-        {
-            SPR_setAutoAnimation(character->sprite, TRUE);
-            SPR_setAnim(character->sprite, BACK);
-            SPR_setHFlip(character->sprite, FALSE);
-        }
+        SPR_setAutoAnimation(character->sprite, TRUE);
+        SPR_setAnim(character->sprite, SIDE);
+        SPR_setHFlip(character->sprite, TRUE);
+    }
+    else if (character->orientation == LEFT)
+    {
+        SPR_setAutoAnimation(character->sprite, TRUE);
+        SPR_setAnim(character->sprite, SIDE);
+        SPR_setHFlip(character->sprite, FALSE);
+    }
+    else if (character->orientation == DOWN)
+    {
+        SPR_setAutoAnimation(character->sprite, TRUE);
+        SPR_setAnim(character->sprite, FACE);
+        SPR_setHFlip(character->sprite, FALSE);
+    }
+    else if (character->orientation == UP)
+    {
+        SPR_setAutoAnimation(character->sprite, TRUE);
+        SPR_setAnim(character->sprite, BACK);
+        SPR_setHFlip(character->sprite, FALSE);
     }
 
     if (character->isMoving == FALSE)
@@ -191,4 +183,18 @@ void MoveCharacter(struct Character *character)
     }
 
     SPR_setPosition(character->sprite, character->x, character->y);
+}
+void UpdateCharacter(struct Character *character)
+{
+    // Control
+    if (character->control >= JOY_1)
+        HandlePlayerInput(character);
+    else
+        HandleAIInput(character);
+
+    // Move
+    MoveCharacter(character);
+
+    // Animation
+    AnimateCharacter(character);
 }
