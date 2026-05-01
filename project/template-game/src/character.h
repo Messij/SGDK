@@ -1,6 +1,7 @@
 #pragma once
 
 #include <genesis.h>
+#include "variable.h"
 
 #pragma region Constants
 #define AI -1
@@ -21,7 +22,7 @@ struct Character
     int speed;
     int orientation;
     bool moves;
-    bool isMoving;
+    // bool isMoving;
 
     // Sprite
     Sprite *sprite;
@@ -46,32 +47,34 @@ void InitCharacter(struct Character *character, int startX, int startY, int spee
 }
 void AnimateCharacter(struct Character *character)
 {
-    if (character->orientation == RIGHT)
+    if (character->moves)
     {
-        SPR_setAutoAnimation(character->sprite, TRUE);
-        SPR_setAnim(character->sprite, SIDE);
-        SPR_setHFlip(character->sprite, TRUE);
+        if (character->orientation == RIGHT)
+        {
+            SPR_setAutoAnimation(character->sprite, TRUE);
+            SPR_setAnim(character->sprite, SIDE);
+            SPR_setHFlip(character->sprite, TRUE);
+        }
+        else if (character->orientation == LEFT)
+        {
+            SPR_setAutoAnimation(character->sprite, TRUE);
+            SPR_setAnim(character->sprite, SIDE);
+            SPR_setHFlip(character->sprite, FALSE);
+        }
+        else if (character->orientation == DOWN)
+        {
+            SPR_setAutoAnimation(character->sprite, TRUE);
+            SPR_setAnim(character->sprite, FACE);
+            SPR_setHFlip(character->sprite, FALSE);
+        }
+        else if (character->orientation == UP)
+        {
+            SPR_setAutoAnimation(character->sprite, TRUE);
+            SPR_setAnim(character->sprite, BACK);
+            SPR_setHFlip(character->sprite, FALSE);
+        }
     }
-    else if (character->orientation == LEFT)
-    {
-        SPR_setAutoAnimation(character->sprite, TRUE);
-        SPR_setAnim(character->sprite, SIDE);
-        SPR_setHFlip(character->sprite, FALSE);
-    }
-    else if (character->orientation == DOWN)
-    {
-        SPR_setAutoAnimation(character->sprite, TRUE);
-        SPR_setAnim(character->sprite, FACE);
-        SPR_setHFlip(character->sprite, FALSE);
-    }
-    else if (character->orientation == UP)
-    {
-        SPR_setAutoAnimation(character->sprite, TRUE);
-        SPR_setAnim(character->sprite, BACK);
-        SPR_setHFlip(character->sprite, FALSE);
-    }
-
-    if (character->isMoving == FALSE)
+    else
     {
         SPR_setAutoAnimation(character->sprite, FALSE);
         SPR_setFrame(character->sprite, 0);
@@ -83,30 +86,26 @@ void HandlePlayerInput(struct Character *player)
     if (JOY_readJoypad(player->control) & BUTTON_RIGHT)
     {
         player->orientation = RIGHT;
-        player->x += player->speed;
-        player->isMoving = true;
+        player->moves = true;
     }
     else if (JOY_readJoypad(player->control) & BUTTON_LEFT)
     {
         player->orientation = LEFT;
-        player->x -= player->speed;
-        player->isMoving = true;
+        player->moves = true;
     }
     else if (JOY_readJoypad(player->control) & BUTTON_DOWN)
     {
         player->orientation = DOWN;
-        player->y += player->speed;
-        player->isMoving = true;
+        player->moves = true;
     }
     else if (JOY_readJoypad(player->control) & BUTTON_UP)
     {
         player->orientation = UP;
-        player->y -= player->speed;
-        player->isMoving = true;
+        player->moves = true;
     }
     else
     {
-        player->isMoving = false;
+        player->moves = false;
     }
     // Directions
     // player->x += (JOY_readJoypad(player->control) & BUTTON_RIGHT) ? player->speed : 0;
@@ -149,19 +148,30 @@ void MoveCharacter(struct Character *character)
         switch (character->orientation)
         {
         case RIGHT:
-            character->x += character->speed;
+            if (character->x + character->sprite->definition->w + character->speed < SCREEN_WIDTH)
+                character->x += character->speed;
+            else
+                character->moves = false;
             break;
         case LEFT:
-            character->x -= character->speed;
+            if (character->x - character->speed > 0)
+                character->x -= character->speed;
+            else
+                character->moves = false;
             break;
         case DOWN:
-            character->y += character->speed;
+            if (character->y + character->sprite->definition->h + character->speed < SCREEN_HEIGHT)
+                character->y += character->speed;
+            else
+                character->moves = false;
             break;
         case UP:
-            character->y -= character->speed;
+            if (character->y - character->speed > 0)
+                character->y -= character->speed;
+            else
+                character->moves = false;
             break;
         }
-        character->isMoving = true;
     }
 
     SPR_setPosition(character->sprite, character->x, character->y);
