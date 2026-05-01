@@ -1,9 +1,7 @@
-
-
 #include <genesis.h>
 #include "resources.h"
 #include "game.h"
-#include "character.h"
+#include "factory.h"
 
 /// ---------------------------------- MAIN ----------------------------------
 int main()
@@ -13,21 +11,11 @@ int main()
     InitGame(&game);
 
     // PLAYERS
-    struct Character player1;
-    InitCharacter(&player1, 5, 5, 2, &friskSprite, JOY_1);
-    // AddCharacterToGame(&game, &player1);
-
-    struct Character player2;
-    InitCharacter(&player2, 50, 50, 2, &friskSprite, JOY_2);
-    // AddCharacterToGame(&game, &player2);
+    CreateCharacter(&game, 5, 5, 2, &friskSprite, JOY_1);
+    CreateCharacter(&game, 50, 50, 2, &friskSprite, JOY_2);
 
     // PNJs
-    // struct Character pnj1;
-    // InitCharacter(&pnj1, 100, 100, 1, &friskSprite, AI);
-    // AddCharacterToGame(&game, &pnj1);
-    // struct Character pnj2;
-    // InitCharacter(&pnj2, 150, 150, 1, &friskSprite, AI);
-    // AddCharacterToGame(&game, &pnj2);
+    // CreateCharacter(&game, 100, 100, 1, &friskSprite, AI);
 
     while (game.isRunning)
     {

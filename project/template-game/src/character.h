@@ -2,18 +2,17 @@
 
 #include <genesis.h>
 
+#pragma region Constants
 #define AI -1
-
 #define FACE 0
 #define SIDE 1
 #define BACK 2
-
 #define DOWN 0
 #define LEFT 2
 #define RIGHT 1
 #define UP 3
+#pragma endregion
 
-/// ---------------------------------- CHARACTER ----------------------------------
 struct Character
 {
     // Mouvement
@@ -30,23 +29,6 @@ struct Character
     // Control
     int control;
 };
-
-// struct Character *CreateCharacter(struct Game *game, int startX, int startY, int speed, const SpriteDefinition *spriteDefinition, int control)
-// {
-//     struct Character *character = malloc(sizeof(struct Character));
-//     InitCharacter(character, startX, startY, speed, spriteDefinition, control);
-//     AddCharacterToGame(&game, character);
-//     return character;
-// }
-
-// void InitCharacterToGame(struct Game *game, struct Character *character, int startX, int startY, int speed, const SpriteDefinition *spriteDefinition, int control)
-// {
-//     if (character == NULL || game == NULL)
-//         return;
-
-//     InitCharacter(character, startX, startY, speed, spriteDefinition, control);
-//     AddCharacterToGame(game, character);
-// }
 void InitCharacter(struct Character *character, int startX, int startY, int speed, const SpriteDefinition *spriteDefinition, int control)
 {
     if (character == NULL)

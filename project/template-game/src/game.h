@@ -2,8 +2,7 @@
 
 #include <genesis.h>
 #include "character.h"
-
-#define MAX_CHARACTERS 10
+#include "variable.h"
 
 enum GameState
 {
@@ -12,7 +11,6 @@ enum GameState
     PAUSED,
     GAME_OVER
 };
-
 struct Game
 {
     enum GameState state;
@@ -26,7 +24,6 @@ struct Game
     struct Character characters[MAX_CHARACTERS];
     int characterCount;
 };
-
 void InitGame(struct Game *game)
 {
     if (game == NULL)
@@ -43,7 +40,6 @@ void InitGame(struct Game *game)
     JOY_init();
     VDP_init();
 }
-
 void StartGame(struct Game *game)
 {
     if (game == NULL)
@@ -127,7 +123,6 @@ void DrawGame(struct Game *game)
 
     SYS_doVBlankProcess();
 }
-
 void AddCharacterToGame(struct Game *game, struct Character *character)
 {
     if (game == NULL || character == NULL || game->characterCount >= MAX_CHARACTERS)
