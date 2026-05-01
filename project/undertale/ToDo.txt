@@ -1,0 +1,8 @@
+- Utiliser une autre palette/sprite pour le Player2
+- Préparer le sprite Flower
+- Faire poper une flower sur l'ecran
+- Detection colision Player/Flower pour la recuperer
+- Emepcher le joueur de sortir de l'ecran / le faire apparaitre de l'autre côté 
+- Score + Timer
+- Ecran d'intro
+- Ecran de fin, relancer une partie
