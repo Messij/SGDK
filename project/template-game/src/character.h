@@ -30,7 +30,7 @@ struct Character
     // Control
     int control;
 };
-void InitCharacter(struct Character *character, int startX, int startY, int speed, const SpriteDefinition *spriteDefinition, int control)
+void InitCharacter(struct Character *character, int startX, int startY, int speed, const SpriteDefinition *spriteDefinition, u16 palette, int control)
 {
     if (character == NULL)
         return;
@@ -40,8 +40,8 @@ void InitCharacter(struct Character *character, int startX, int startY, int spee
     character->speed = speed;
     character->control = control;
 
-    PAL_setPalette(PAL2, spriteDefinition->palette->data, DMA);
-    character->sprite = SPR_addSprite(spriteDefinition, character->x, character->y, TILE_ATTR(PAL2, FALSE, FALSE, FALSE));
+    PAL_setPalette(palette, spriteDefinition->palette->data, DMA);
+    character->sprite = SPR_addSprite(spriteDefinition, character->x, character->y, TILE_ATTR(palette, FALSE, FALSE, FALSE));
     SPR_setAutoAnimation(character->sprite, FALSE);
     SPR_setFrame(character->sprite, 0);
 }
@@ -172,21 +172,19 @@ void MoveCharacter(struct Character *character)
                 character->moves = false;
             break;
         }
+        if (character->moves)
+            SPR_setPosition(character->sprite, character->x, character->y);
     }
-
-    SPR_setPosition(character->sprite, character->x, character->y);
 }
 void UpdateCharacter(struct Character *character)
 {
     // Control
-    if (character->control >= JOY_1)
-        HandlePlayerInput(character);
-    else
+    if (character->control == AI)
         HandleAIInput(character);
-
+    else
+        HandlePlayerInput(character);
     // Move
     MoveCharacter(character);
-
     // Animation
     AnimateCharacter(character);
 }
