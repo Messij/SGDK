@@ -30,6 +30,7 @@ struct Character
     // Control
     int control;
 };
+
 void InitCharacter(struct Character *character, int startX, int startY, int speed, const SpriteDefinition *spriteDefinition, u16 palette, int control)
 {
     if (character == NULL)
@@ -180,11 +181,31 @@ void UpdateCharacter(struct Character *character)
 {
     // Control
     if (character->control == AI)
-        HandleAIInput(character);
+    {
+        // HandleAIInput(character);
+    }
     else
         HandlePlayerInput(character);
     // Move
     MoveCharacter(character);
     // Animation
     AnimateCharacter(character);
+}
+bool CharacterCollideWithOtherCharacter(struct Character *character, struct Character *other)
+{
+    // Collision logic
+    if (
+        character->x > other->x && character->x < other->x + other->sprite->definition->w && character->y > other->y && character->y < other->y + other->sprite->definition->h)
+    {
+        return true;
+    }
+    return false;
+}
+void DestroyCharacter(struct Character *character)
+{
+    if (character == NULL)
+        return;
+
+    SPR_releaseSprite(character->sprite);
+    // free(character);
 }

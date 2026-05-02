@@ -4,6 +4,15 @@
 #include "character.h"
 #include "variable.h"
 
+#define ALL_CHARACTERS                                   \
+    struct Character *character = &game->characters[0];  \
+    character < &game->characters[game->characterCount]; \
+    character++
+#define ALL_PLAYERS                               \
+    struct Character *player = &game->players[0]; \
+    player < &game->players[game->playerCount];   \
+    player++
+
 enum GameState
 {
     MENU,
@@ -19,6 +28,9 @@ struct Game
     bool isRunning;
     int score;
     int level;
+
+    struct Character players[MAX_PLAYERS];
+    int playerCount;
 
     // list of characters
     struct Character characters[MAX_CHARACTERS];
@@ -82,17 +94,42 @@ void GameInputs(struct Game *game)
             EndGame(game);
     }
 }
+void RemoveCharacterFromGame(struct Game *game, int index)
+{
+    if (game == NULL || index < 0 || index >= game->characterCount)
+        return;
+
+    // free(&game->characters[index]);
+
+    for (int i = index; i < game->characterCount - 1; i++)
+    {
+        game->characters[i] = game->characters[i + 1];
+    }
+    game->characterCount--;
+}
 void UpdateGame(struct Game *game)
 {
     if (game->state == GAME)
     {
-        // Update Characters
-        for (int i = 0; i < game->characterCount; i++)
+        for (ALL_PLAYERS)
         {
-            UpdateCharacter(&game->characters[i]);
+            UpdateCharacter(player);
         }
+        for (ALL_CHARACTERS)
+        {
+            for (ALL_PLAYERS)
+            {
+                if (CharacterCollideWithOtherCharacter(character, player))
+                {
+                    DestroyCharacter(character);
+                    RemoveCharacterFromGame(game, character - game->characters);
+                    break;
+                }
+            }
+        }
+
+        GameInputs(game);
     }
-    GameInputs(game);
 }
 void DrawGame(struct Game *game)
 {
@@ -125,11 +162,19 @@ void DrawGame(struct Game *game)
 }
 void AddCharacterToGame(struct Game *game, struct Character *character)
 {
-    if (game == NULL || character == NULL || game->characterCount >= MAX_CHARACTERS)
+    if (game == NULL || character == NULL)
         return;
 
-    game->characters[game->characterCount] = *character;
-    game->characterCount++;
+    if (character->control == AI && game->characterCount < MAX_CHARACTERS)
+    {
+        game->characters[game->characterCount] = *character;
+        game->characterCount++;
+    }
+    else if (character->control != AI && game->playerCount < MAX_PLAYERS)
+    {
+        game->players[game->playerCount] = *character;
+        game->playerCount++;
+    }
 }
 void RemoveCharacter(struct Game *game, int index)
 {
