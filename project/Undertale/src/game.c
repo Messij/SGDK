@@ -1,16 +1,23 @@
 #include <genesis.h>
 #include "game.h"
+#include "resources.h"
+#include "factory.h"
+#include "character.h"
 
 void InitGame(struct Game *game)
 {
     if (game == NULL)
         return;
 
+    // State
     game->state = MENU;
+    game->changeState = false;
     game->isRunning = true;
     game->score = 0;
     game->level = 1;
+
     game->characterCount = 0;
+    game->playerCount = 0;
 
     // Init Sprite
     SPR_init();
@@ -22,7 +29,8 @@ void StartGame(struct Game *game)
     if (game == NULL)
         return;
 
-    // setRandomSeed(TIMER_getTick());
+    setRandomSeed(getTick());
+    SpawnEnemy(game);
     game->state = GAME;
 }
 void PauseGame(struct Game *game)
@@ -48,19 +56,26 @@ void EndGame(struct Game *game)
 }
 void GameInputs(struct Game *game)
 {
-    if (JOY_readJoypad(JOY_1) & BUTTON_START ||
-        JOY_readJoypad(JOY_1) & BUTTON_A)
+    if (JOY_readJoypad(JOY_1) & BUTTON_START && !game->changeState)
     {
+        game->changeState = true;
+        // Start Game
         if (game->state == MENU)
-        {
             StartGame(game);
-        }
+        // Pause Game
         else if (game->state == GAME)
             PauseGame(game);
+        // End Game
         else if (game->state == PAUSED)
             ResumeGame(game);
-        else if (game->state == GAME_OVER)
-            EndGame(game);
+    }
+    else if (JOY_readJoypad(JOY_1) & BUTTON_START && game->changeState)
+    {
+        // wait for button release to change state again
+    }
+    else
+    {
+        game->changeState = false;
     }
 }
 void RemoveCharacterFromGame(struct Game *game, int index)
@@ -68,6 +83,8 @@ void RemoveCharacterFromGame(struct Game *game, int index)
     if (game == NULL || index < 0 || index >= game->characterCount)
         return;
 
+    // DestroyCharacter(&game->characters[index]);
+    // SPR_releaseSprite(game->characters[index]->sprite);
     // free(&game->characters[index]);
 
     for (int i = index; i < game->characterCount - 1; i++)
@@ -81,21 +98,19 @@ void UpdateGame(struct Game *game)
     if (game->state == GAME)
     {
         for (ALL_PLAYERS)
-        {
             UpdateCharacter(player);
-        }
+
         for (ALL_CHARACTERS)
-        {
             for (ALL_PLAYERS)
-            {
                 if (CharacterCollideWithOtherCharacter(character, player))
                 {
-                    DestroyCharacter(character);
-                    RemoveCharacterFromGame(game, character - game->characters);
-                    break;
+                    // DestroyCharacter(character);
+                    // RemoveCharacterFromGame(game, character - game->characters);
+                    character->x = random() % (SCREEN_WIDTH);
+                    character->x = random() % (SCREEN_HEIGHT);
+                    free(character);
+                    // break;
                 }
-            }
-        }
     }
 
     GameInputs(game);
@@ -144,4 +159,10 @@ void AddCharacterToGame(struct Game *game, struct Character *character)
         game->players[game->playerCount] = *character;
         game->playerCount++;
     }
+}
+void SpawnEnemy(struct Game *game)
+{
+    int rX = random() % (0 - SCREEN_WIDTH);
+    int rY = random() % (0 - SCREEN_HEIGHT);
+    CreateCharacter(&game, rX, rY, 1, &sansSprite, PAL0, AI);
 }

@@ -23,13 +23,14 @@ enum GameState
 };
 struct Game
 {
+    // State
     enum GameState state;
-
-    // Game state variables
+    bool changeState;
     bool isRunning;
     int score;
     int level;
 
+    // List of player
     struct Character players[MAX_PLAYERS];
     int playerCount;
 
@@ -47,5 +48,5 @@ void RemoveCharacterFromGame(struct Game *game, int index);
 void UpdateGame(struct Game *game);
 void DrawGame(struct Game *game);
 void AddCharacterToGame(struct Game *game, struct Character *character);
-
+void SpawnEnemy(struct Game *game);
 #endif

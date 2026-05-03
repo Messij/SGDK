@@ -18,6 +18,7 @@ int main()
     // int rX = random() % (SCREEN_WIDTH);
     // int rY = random() % (SCREEN_HEIGHT);
     // CreateCharacter(&game, rX, rY, 1, &sansSprite, PAL0, AI);
+    // SpawnEnemy(&game);
 
     while (game.isRunning)
     {
@@ -26,14 +27,6 @@ int main()
 
         // DRAW
         DrawGame(&game);
-
-        // if (game->characterCount <= 0)
-        {
-            // random x in screen
-            //             int rX = random() % (0 - SCREEN_WIDTH);
-            // int rY = random() % (0 - SCREEN_HEIGHT);
-            // CreateCharacter(&game, rX, rY, 1, &sansSprite, PAL0, AI);
-        }
     }
     return (0);
 }
